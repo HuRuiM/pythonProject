@@ -3,7 +3,6 @@ def winCheck(hand):
     # 胡牌检查
     if len(hand) % 3 != 2:
         return False
-
     # 统计每种牌的数量
     count = {}
     for tile in hand:
