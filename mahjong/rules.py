@@ -1,42 +1,50 @@
-import random
 def winCheck(hand):
-    # 胡牌检查
-    if len(hand) % 3 != 2:
-        return False
-    # 统计每种牌的数量
-    count = {}
+    # 统计手牌中每种牌的数量
+    hand_dict = {}
     for tile in hand:
-        if tile not in count:
-            count[tile] = 1
+        if tile in hand_dict:
+            hand_dict[tile] += 1
         else:
-            count[tile] += 1
+            hand_dict[tile] = 1
 
-    # 判断是否有顺子或刻子
-    for tile, num in count.items():
-        if num >= 2:
-            # 如果有两张相同的牌，则可以组成刻子
-            if num % 3 == 0:
-                count[tile] -= 3
-            else:
-                # 如果只有一张相同的牌，则需要有其他牌与之组成顺子
-                for i in range(1, 8):
-                    if (tile + i in count and count[tile + i] > 0) or (tile - i in count and count[tile - i] > 0):
-                        count[tile] -= 1
-                        if tile + i in count:
-                            count[tile + i] -= 1
-                        else:
-                            count[tile - i] -= 1
-                        break
-        else:
-            return False
+    # 如果手里的牌数量不是 14 张，无法胡牌
+    if len(hand) != 14:
+        return False
 
-    # 判断是否还有剩余的单张牌
-    for num in count.values():
-        if num > 0:
-            return False
-    return True
+    # 遍历所有可能的将牌（对子），尝试从手牌中去除对子判断是否可以胡牌
+    for pair in hand_dict:
+        if hand_dict[pair] >= 2:
+            hand_dict[pair] -= 2
+            if canWin(hand_dict):
+                return True
+            hand_dict[pair] += 2
+
+    return False
 
 
+# 辅助函数，递归判断是否可以胡牌
+def canWin(hand_dict):
+    if sum(hand_dict.values()) == 0:
+        return True
+
+    # 逐个尝试将手牌中的顺子、刻子和杠子移除，然后继续递归判断
+    for key in list(hand_dict.keys()):
+        if hand_dict[key] >= 3:
+            hand_dict[key] -= 3
+            if canWin(hand_dict):
+                return True
+            hand_dict[key] += 3
+
+        if key + 1 in hand_dict and key + 2 in hand_dict:
+            hand_dict[key] -= 1
+            hand_dict[key + 1] -= 1
+            hand_dict[key + 2] -= 1
+            if canWin(hand_dict):
+                return True
+            hand_dict[key] += 1
+            hand_dict[key + 1] += 1
+            hand_dict[key + 2] += 1
+    return False
 def gangCheck(hand):
     # 杠牌检查
     if len(hand) % 3 != 0:
@@ -56,12 +64,10 @@ def gangCheck(hand):
             return True
 
     return False
-
-
 def pengCheck(hand):
     # 碰牌检查
     if len(hand) % 3 != 0:
-        return False
+        return True
 
     # 统计每种牌的数量
     count = {}
@@ -76,29 +82,11 @@ def pengCheck(hand):
         if num == 3:
             return True
     return False
+hand=[]
+print(winCheck(hand))
 
 
 
 
-# 定义牌的范围
-tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-# 随机生成玩家手中的牌
-hand = random.choices(tiles, k=14)
-# 输出玩家手中的牌
-print("玩家手中的牌:", hand)
 
-# 调用函数检查是否可以胡牌、碰牌或杠牌
-if winCheck(hand):
-    print("可以胡牌!")
-else:
-    print("不能胡牌.")
 
-if pengCheck(hand):
-    print("可以碰牌!")
-else:
-    print("不能碰牌.")
-
-if gangCheck(hand):
-    print("可以杠牌!")
-else:
-    print("不能杠牌.")
